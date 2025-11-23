@@ -1,0 +1,43 @@
+import org.opencv.core.*;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        // Load OpenCV
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+        // Load vehicle image
+        String imagePath = "resources/plate_sample.jpg";
+        Mat image = Imgcodecs.imread(imagePath);
+
+        if (image.empty()) {
+            System.out.println("Image not found!");
+            return;
+        }
+
+        // Load number-plate classifier (Haar Cascade)
+        CascadeClassifier plateDetector =
+                new CascadeClassifier("resources/haarcascade_russian_plate_number.xml");
+
+        MatOfRect plates = new MatOfRect();
+        plateDetector.detectMultiScale(image, plates);
+
+        for (Rect rect : plates.toArray()) {
+            Imgproc.rectangle(image,
+                    new Point(rect.x, rect.y),
+                    new Point(rect.x + rect.width, rect.y + rect.height),
+                    new Scalar(0, 255, 0), 3);
+
+            System.out.println("Detected plate at: " + rect);
+        }
+
+        // Save output image
+        Imgcodecs.imwrite("output_detected.jpg", image);
+
+        System.out.println("Detection Completed! Check output_detected.jpg");
+    }
+}
